@@ -1,6 +1,8 @@
 import os
 import pytube
 
+from noam_utils import general_functions as gf
+
 
 def print_video_stats(video_url, show_description=False):
     video = pytube.YouTube(video_url)
@@ -20,13 +22,28 @@ def print_video_stats(video_url, show_description=False):
         print(f"\nVideo Description:\n{vid_description}")
 
 
-def download_vid_from_youtube(video_url, video_output_path, show_statistics=False):
-    # TODO: Add test for file/folder existence
+def download_video_from_youtube(video_url, output_dir, save_only_audio=False, show_statistics=False):
+    # TODO: Add option to choose which stream to download
+    # TODO: Enable more extension control
     if show_statistics:
         print_video_stats(video_url)
     video = pytube.YouTube(video_url)
-    vid_best_stream = video.streams.get_highest_resolution()
-    # TODO: Add option to choose which stream to download
-    vid_best_stream.download(video_output_path)
-    print(f"Saved {video.title} to {video_output_path} directory")
-    # TODO: pring downloaded video stats (size, fps, format, etc.)
+    # getting relevant stream and converting file to mp3 for audio files
+    if save_only_audio:
+        stream = video.streams.get_audio_only()
+        filename = f"{gf.get_filename(stream.default_filename, with_extension=False)}.mp3"
+    else:
+        stream = video.streams.get_highest_resolution()
+        filename = stream.default_filename
+    # downloading stream
+    if os.path.isfile(os.path.join(output_dir, filename)):
+        print(f"\nThe file {filename} already exists in {output_dir} directory!")
+        return
+    print(f"\nDownloading file {filename} to {output_dir} directory")
+    stream.download(output_path=output_dir, filename=filename)
+    print("\nDone")
+    # TODO: print downloaded video stats (size, fps, format, etc.)
+
+
+if __name__ == '__main__':
+    print('aaa')
