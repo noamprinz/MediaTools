@@ -37,13 +37,9 @@ def download_video_from_youtube(video_url, output_dir, save_only_audio=False, sh
         filename = stream.default_filename
     # downloading stream
     if os.path.isfile(os.path.join(output_dir, filename)):
-        print(f"\nThe file {filename} already exists in {output_dir} directory!")
+        print(f"\nThe file ''{filename}'' already exists in {output_dir} directory!")
         return
-    print(f"\nDownloading file {filename} to {output_dir} directory")
+    print(f"\nDownloading file ''{filename}'' to {output_dir} directory")
     stream.download(output_path=output_dir, filename=filename)
     print("\nDone")
     # TODO: print downloaded video stats (size, fps, format, etc.)
-
-
-if __name__ == '__main__':
-    print('aaa')
