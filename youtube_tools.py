@@ -1,45 +1,64 @@
+import yt_dlp
 import os
-import pytube
-
-from noam_utils import general_functions as gf
 
 
-def print_video_stats(video_url, show_description=False):
-    video = pytube.YouTube(video_url)
-    vid_title = video.title
-    vid_length = video.length
-    vid_author = video.author
-    vid_publish_date = video.publish_date
-    num_views = video.views
-    vid_description = video.description
-    print(f"\n*** Video Statistics ***\n\n"
-          f"Video Title: {vid_title}\n"
-          f"Video Author: {vid_author}\n"
-          f"Video Length: {int(vid_length / 60)}:{vid_length % 60}\n"
-          f"Video Publish Date: {vid_publish_date}\n"
-          f"Number of Views: {num_views}\n")
-    if show_description:
-        print(f"\nVideo Description:\n{vid_description}")
+def download_from_youtube(video_url, output_path, format_type='mp4'):
+    """
+    Download content from YouTube as either MP4 video or MP3 audio.
 
+    Args:
+        video_url (str): URL of the YouTube video
+        output_path (str): Directory path where the file will be saved
+        format_type (str): Either 'mp4' or 'mp3' (default: 'mp4')
+    """
+    if format_type not in ['mp4', 'mp3']:
+        raise ValueError("format_type must be either 'mp4' or 'mp3'")
 
-def download_video_from_youtube(video_url, output_dir, save_only_audio=False, show_statistics=False):
-    # TODO: Add option to choose which stream to download
-    # TODO: Enable more extension control
-    if show_statistics:
-        print_video_stats(video_url)
-    video = pytube.YouTube(video_url)
-    # getting relevant stream and converting file to mp3 for audio files
-    if save_only_audio:
-        stream = video.streams.get_audio_only()
-        filename = f"{gf.get_filename(stream.default_filename, with_extension=False)}.mp3"
-    else:
-        stream = video.streams.get_highest_resolution()
-        filename = stream.default_filename
-    # downloading stream
-    if os.path.isfile(os.path.join(output_dir, filename)):
-        print(f"\nThe file ''{filename}'' already exists in {output_dir} directory!")
-        return
-    print(f"\nDownloading file ''{filename}'' to {output_dir} directory")
-    stream.download(output_path=output_dir, filename=filename)
-    print("\nDone")
-    # TODO: print downloaded video stats (size, fps, format, etc.)
+    # Configure options based on format type
+    if format_type == 'mp4':
+        ydl_opts = {
+            'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+            'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
+        }
+    else:  # mp3
+        ydl_opts = {
+            'format': 'bestaudio/best',
+            'extract_audio': True,
+            'audio_format': 'mp3',
+            'audio_quality': 0,  # 0 is the best quality
+            'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
+            'postprocessors': [{
+                'key': 'FFmpegExtractAudio',
+                'preferredcodec': 'mp3',
+                'preferredquality': '192',
+            }],
+        }
+
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        try:
+            ydl.download([video_url])
+            print(f"{'Video' if format_type == 'mp4' else 'Audio'} downloaded successfully!")
+        except Exception as e:
+            print(f"An error occurred: {str(e)}")
+
+if __name__ == '__main__':
+    output_path = r"C:\Users\Noam Prinz\Desktop\songs"
+
+    paths = ['https://www.youtube.com/watch?v=1_mBUXFNrCc',
+             'https://www.youtube.com/watch?v=p1Nhx-Dn3yw',
+             'https://www.youtube.com/watch?v=0xSmcYGHMHE',
+             'https://www.youtube.com/watch?v=WXLPWP3bduU',
+             'https://www.youtube.com/watch?v=YCp2bQ_KOgg',
+             'https://www.youtube.com/watch?v=sN3hDWjiGb0',
+             'https://www.youtube.com/watch?v=I_lDQkxe5xw',
+             'https://www.youtube.com/watch?v=jSvbsndk4Jk',
+             'https://www.youtube.com/watch?v=ujap-AZz860',
+             'https://www.youtube.com/watch?v=Rf2dlAbWOew',
+             'https://www.youtube.com/watch?v=f3tiN2ZVTAA',
+             'https://www.youtube.com/watch?v=zMJ1qZqWS_8',
+             'https://www.youtube.com/watch?v=YevXvvoZ7oI',
+             'https://www.youtube.com/watch?v=upLuP1SCvJA',
+             'https://www.youtube.com/watch?v=0ktmt8bZ_ek',
+             'https://www.youtube.com/watch?v=-0QZMHsDxtY']
+    for path in paths:
+        download_from_youtube(path, output_path, format_type='mp3')

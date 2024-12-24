@@ -1,3 +1,5 @@
-pytube==11.0.0
+pytube==12.1.2
+yt-dlp
+ffmpeg-python
 
-git+git://github.com/noam443/NoamUtils.git
+git+https://github.com/noam443/NoamUtils.git
